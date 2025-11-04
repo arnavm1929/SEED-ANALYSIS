@@ -1,0 +1,8 @@
+# Ignore large model and dataset files
+*.zip
+*.pt
+runs/
+datasets/
+dataset/
+VegSeedsBD_raw/
+VegSeedsBD/
