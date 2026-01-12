@@ -1,10 +1,6 @@
 import os
 import shutil
 import random
-import torch
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("Using device:", device)
-
 
 # Paths
 raw_data_dir = "VegSeedsBD_raw"
@@ -23,16 +19,22 @@ for split in ["train", "val", "test"]:
 for class_name in os.listdir(raw_data_dir):
     class_path = os.path.join(raw_data_dir, class_name)
     if not os.path.isdir(class_path):
-        continue  # skip non-folders
+        continue
 
-    # Collect only image files
-    images = [f for f in os.listdir(class_path) 
-              if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+    # Recursively collect all image files inside this class
+    images = []
+    for root, dirs, files in os.walk(class_path):
+        for f in files:
+            if f.lower().endswith((".jpg", ".jpeg", ".png")):
+                images.append(os.path.join(root, f))
 
-    # Shuffle images
+    if len(images) == 0:
+        print(f"⚠ WARNING: No images found for class: {class_name}")
+        continue
+
     random.shuffle(images)
 
-    # Split
+    # Compute splits
     n_total = len(images)
     n_train = int(n_total * train_split)
     n_val = int(n_total * val_split)
@@ -41,13 +43,13 @@ for class_name in os.listdir(raw_data_dir):
     val_files = images[n_train:n_train + n_val]
     test_files = images[n_train + n_val:]
 
-    # Copy files into train/val/test
-    for split, files in zip(["train", "val", "test"], [train_files, val_files, test_files]):
-        split_class_dir = os.path.join(output_dir, split, class_name)
-        os.makedirs(split_class_dir, exist_ok=True)
-        for f in files:
-            src = os.path.join(class_path, f)
-            dst = os.path.join(split_class_dir, f)
+    # Copy files into train/val/test/<class>
+    for split, file_list in zip(["train", "val", "test"], [train_files, val_files, test_files]):
+        out_dir = os.path.join(output_dir, split, class_name)
+        os.makedirs(out_dir, exist_ok=True)
+
+        for src in file_list:
+            dst = os.path.join(out_dir, os.path.basename(src))
             shutil.copy(src, dst)
 
-print("✅ Dataset split completed!")
+print("✅ Dataset split completed successfully using recursive search!")

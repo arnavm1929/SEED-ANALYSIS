@@ -1,8 +1,16 @@
-# Ignore large model and dataset files
+# Virtual environments
+venv/
+yolo_env/
+
+# Datasets & zips
 *.zip
-*.pt
+VegSeedsBD*/
+data/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# YOLO outputs
 runs/
-datasets/
-dataset/
-VegSeedsBD_raw/
-VegSeedsBD/
+*.pt
